@@ -1,0 +1,2474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historical Archive Search System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===== RESET & BASE STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ===== MAIN APP ===== */
+        .app-container {
+            width: 100%;
+            max-width: 1400px;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.5s ease;
+        }
+
+        /* ===== APP HEADER ===== */
+        .app-header {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .app-logo i {
+            font-size: 2rem;
+        }
+
+        .app-logo h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-item {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .app-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .app-sidebar {
+            width: 250px;
+            background: #f8f9fa;
+            padding: 30px 20px;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+
+        .sidebar-section h3 {
+            color: #1a2980;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            padding-left: 10px;
+        }
+
+        .sidebar-links {
+            list-style: none;
+        }
+
+        .sidebar-links li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-links a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #555;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-links a:hover,
+        .sidebar-links a.active {
+            background: white;
+            color: #1a2980;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ===== PAGES ===== */
+        .page {
+            display: none;
+            flex: 1;
+            padding: 30px;
+            background: #fafafa;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* ===== DASHBOARD PAGE ===== */
+        .dashboard-header {
+            margin-bottom: 30px;
+        }
+
+        .dashboard-header h1 {
+            font-family: 'Playfair Display', serif;
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-header p {
+            color: #666;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+        }
+
+        .stat-card:nth-child(1)::before { background: #1a2980; }
+        .stat-card:nth-child(2)::before { background: #4CAF50; }
+        .stat-card:nth-child(3)::before { background: #FF9800; }
+        .stat-card:nth-child(4)::before { background: #9C27B0; }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-card:nth-child(1) .stat-icon { background: #1a2980; }
+        .stat-card:nth-child(2) .stat-icon { background: #4CAF50; }
+        .stat-card:nth-child(3) .stat-icon { background: #FF9800; }
+        .stat-card:nth-child(4) .stat-icon { background: #9C27B0; }
+
+        .stat-trend {
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .stat-trend.up {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+        }
+
+        .stat-trend.down {
+            background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+        }
+
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .feature-btn {
+            background: #f8f9fa;
+            color: #1a2980;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .feature-btn:hover {
+            background: #1a2980;
+            color: white;
+        }
+
+        /* ===== ANALYTICS PAGE ===== */
+        .analytics-header {
+            margin-bottom: 30px;
+        }
+
+        .analytics-header h1 {
+            font-family: 'Playfair Display', serif;
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .analytics-header p {
+            color: #666;
+        }
+
+        .chart-period-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .period-btn {
+            padding: 8px 15px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .period-btn.active {
+            background: #1a2980;
+            color: white;
+            border-color: #1a2980;
+        }
+
+        .period-btn:hover:not(.active) {
+            border-color: #1a2980;
+            color: #1a2980;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .analytics-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .analytics-card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .chart-container {
+            height: 250px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            background: #f8f9fa;
+        }
+
+        /* Chart Styles */
+        .chart {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .chart-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            padding: 20px;
+        }
+
+        .chart-grid-line {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-grid-line.horizontal {
+            width: 100%;
+            height: 1px;
+            left: 0;
+        }
+
+        .chart-grid-line.vertical {
+            width: 1px;
+            height: 100%;
+            top: 0;
+        }
+
+        .chart-line {
+            fill: none;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .chart-point {
+            fill: white;
+            stroke-width: 2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chart-point:hover {
+            transform: scale(1.5);
+        }
+
+        .chart-bar {
+            fill: #1a2980;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .chart-bar:hover {
+            fill: #26d0ce;
+            transform: scale(1.05);
+        }
+
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+        }
+
+        .pie-segment {
+            fill: #1a2980;
+            stroke: white;
+            stroke-width: 2;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .pie-segment:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .chart-labels {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .chart-values {
+            position: absolute;
+            left: 10px;
+            top: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .metric-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a2980;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* ===== SEARCH PAGE ===== */
+        .search-box-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #1a2980;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(26, 41, 128, 0.3);
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            min-width: 150px;
+        }
+
+        .date-range {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .search-results {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-item {
+            padding: 25px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: background 0.3s ease;
+        }
+
+        .result-item:hover {
+            background: #f8f9fa;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .result-title {
+            font-family: 'Playfair Display', serif;
+            color: #1a2980;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 15px;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .result-content {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 15px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .action-btn:hover {
+            background: #1a2980;
+            color: white;
+            border-color: #1a2980;
+        }
+
+        .rag-result {
+            background: #f0f7ff;
+            border-left: 4px solid #1a2980;
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 20px;
+        }
+
+        .rag-result h3 {
+            color: #1a2980;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .rag-answer {
+            color: #333;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .rag-citation {
+            background: #e8f4ff;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .compression-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        /* ===== DOCUMENTS PAGE ===== */
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .document-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .document-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .document-image {
+            height: 200px;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+        }
+
+        .document-content {
+            padding: 20px;
+        }
+
+        .document-title {
+            font-family: 'Playfair Display', serif;
+            color: #333;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .document-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .meta-tag {
+            background: #f0f7ff;
+            color: #1a2980;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .document-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* ===== KNOWLEDGE GRAPH PAGE ===== */
+        .graph-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+            height: 600px;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .graph-visualization {
+            flex: 2;
+            background: #f8f9fa;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .graph-controls {
+            flex: 1;
+            padding-left: 30px;
+            overflow-y: auto;
+        }
+
+        .entity-list {
+            margin-top: 20px;
+        }
+
+        .entity-item {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #1a2980;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .entity-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .entity-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .entity-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+
+        .person-type { background: #e3f2fd; color: #1976d2; }
+        .place-type { background: #e8f5e9; color: #388e3c; }
+        .event-type { background: #fff3e0; color: #f57c00; }
+        .document-type { background: #f3e5f5; color: #7b1fa2; }
+
+        .entity-connections {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* ===== OCR PROCESSING PAGE ===== */
+        .processing-queue {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: background 0.3s ease;
+        }
+
+        .queue-item:hover {
+            background: #f8f9fa;
+        }
+
+        .queue-item:last-child {
+            border-bottom: none;
+        }
+
+        .queue-status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 20px;
+        }
+
+        .status-processing { background: #1a2980; animation: pulse 1.5s infinite; }
+        .status-completed { background: #4CAF50; }
+        .status-pending { background: #FF9800; }
+        .status-error { background: #f44336; }
+
+        .queue-details {
+            flex: 1;
+        }
+
+        .queue-filename {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .queue-progress {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .ocr-preview {
+            display: flex;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .preview-original, .preview-processed {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-title {
+            font-family: 'Playfair Display', serif;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .preview-text {
+            height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .accuracy-score {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .app-content {
+                flex-direction: column;
+            }
+            
+            .app-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            .graph-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .graph-controls {
+                padding-left: 0;
+                padding-top: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .app-container {
+                max-width: 100%;
+            }
+            
+            .app-header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 20px;
+            }
+            
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page {
+                padding: 20px;
+            }
+            
+            .search-input-group {
+                flex-direction: column;
+            }
+            
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-period-selector {
+                flex-wrap: wrap;
+            }
+
+            .ocr-preview {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Application -->
+    <div class="app-container" id="appContainer">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="app-logo">
+                <i class="fas fa-archive"></i>
+                <h2>Historical Archive Search System</h2>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="#" class="nav-item active" onclick="showPage('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="#" class="nav-item" onclick="showPage('search')">
+                    <i class="fas fa-search"></i> Search
+                </a>
+                <a href="#" class="nav-item" onclick="showPage('analytics')">
+                    <i class="fas fa-chart-bar"></i> Analytics
+                </a>
+                <a href="#" class="nav-item" onclick="showPage('documents')">
+                    <i class="fas fa-file-alt"></i> Documents
+                </a>
+                <a href="#" class="nav-item" onclick="showPage('knowledge-graph')">
+                    <i class="fas fa-project-diagram"></i> Knowledge Graph
+                </a>
+                <a href="#" class="nav-item" onclick="showPage('ocr-processing')">
+                    <i class="fas fa-eye"></i> OCR Processing
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="app-content">
+            <!-- Sidebar -->
+            <div class="app-sidebar">
+                <div class="sidebar-section">
+                    <h3>Navigation</h3>
+                    <ul class="sidebar-links">
+                        <li><a href="#" class="active" onclick="showPage('dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="#" onclick="showPage('search')"><i class="fas fa-search"></i> Search</a></li>
+                        <li><a href="#" onclick="showPage('analytics')"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                        <li><a href="#" onclick="showPage('documents')"><i class="fas fa-file-alt"></i> Documents</a></li>
+                        <li><a href="#" onclick="showPage('knowledge-graph')"><i class="fas fa-project-diagram"></i> Knowledge Graph</a></li>
+                        <li><a href="#" onclick="showPage('ocr-processing')"><i class="fas fa-eye"></i> OCR Processing</a></li>
+                    </ul>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>Quick Actions</h3>
+                    <ul class="sidebar-links">
+                        <li><a href="#" onclick="uploadDocument()"><i class="fas fa-upload"></i> Upload Document</a></li>
+                        <li><a href="#" onclick="newSearch()"><i class="fas fa-search-plus"></i> New Search</a></li>
+                        <li><a href="#" onclick="viewReports()"><i class="fas fa-file-chart-line"></i> View Reports</a></li>
+                        <li><a href="#" onclick="exportData()"><i class="fas fa-download"></i> Export Data</a></li>
+                    </ul>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>System Status</h3>
+                    <ul class="sidebar-links">
+                        <li><a href="#" onclick="showPage('dashboard')"><i class="fas fa-server"></i> Server: <span id="serverStatus">Online</span></a></li>
+                        <li><a href="#" onclick="showPage('dashboard')"><i class="fas fa-database"></i> Database: <span id="dbStatus">Active</span></a></li>
+                        <li><a href="#" onclick="showPage('dashboard')"><i class="fas fa-robot"></i> AI Models: <span id="aiStatus">Running</span></a></li>
+                        <li><a href="#" onclick="showPage('dashboard')"><i class="fas fa-sync"></i> Last Sync: <span id="lastSync">Today</span></a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Pages -->
+            <!-- Dashboard Page -->
+            <div class="page active" id="dashboard">
+                <div class="dashboard-header">
+                    <h1>Dashboard</h1>
+                    <p>AI-Powered Historical Archive Search System</p>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-archive"></i>
+                            </div>
+                            <div class="stat-trend up">
+                                <i class="fas fa-arrow-up"></i> 12.5%
+                            </div>
+                        </div>
+                        <div class="stat-number">1,247,892</div>
+                        <div class="stat-label">Total Documents</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-trend up">
+                                <i class="fas fa-arrow-up"></i> 8.2%
+                            </div>
+                        </div>
+                        <div class="stat-number">934,419</div>
+                        <div class="stat-label">Processed Documents</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-project-diagram"></i>
+                            </div>
+                            <div class="stat-trend up">
+                                <i class="fas fa-arrow-up"></i> 15.3%
+                            </div>
+                        </div>
+                        <div class="stat-number">4,892,156</div>
+                        <div class="stat-label">Extracted Entities</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="stat-trend up">
+                                <i class="fas fa-arrow-up"></i> 24.7%
+                            </div>
+                        </div>
+                        <div class="stat-number">42,187</div>
+                        <div class="stat-label">Total Searches</div>
+                    </div>
+                </div>
+
+                <!-- Features Section -->
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-hand-point-up"></i>
+                        </div>
+                        <h3>Handwriting Recognition</h3>
+                        <p>Advanced OCR models extract text from handwritten manuscripts with high accuracy using AI-powered recognition.</p>
+                        <button class="feature-btn" onclick="showPage('ocr-processing')">Explore OCR</button>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-compress-alt"></i>
+                        </div>
+                        <h3>ScaleDown Compression</h3>
+                        <p>Reduce document size by 80% while preserving essential historical facts and maintaining context integrity.</p>
+                        <button class="feature-btn" onclick="showPage('documents')">View Compression</button>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <h3>Knowledge Graph</h3>
+                        <p>Entities linked across documents reveal hidden connections between people, places, and historical events.</p>
+                        <button class="feature-btn" onclick="showPage('knowledge-graph')">Explore Graph</button>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="dashboard-header" style="margin-top: 40px;">
+                    <h2>Recent Activity</h2>
+                </div>
+
+                <div class="search-results" style="margin-top: 20px;">
+                    <div class="result-item">
+                        <div class="result-header">
+                            <div class="result-title">Document Processing Completed</div>
+                            <div class="result-meta">Just now</div>
+                        </div>
+                        <div class="result-content">"Civil War Letters Collection (1863)" has been processed with 94.2% OCR accuracy and compressed to 21% of original size.</div>
+                        <div class="compression-info">
+                            <i class="fas fa-compress-alt" style="color: #1a2980;"></i>
+                            <span>ScaleDown compression: 79% reduction</span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <div class="result-header">
+                            <div class="result-title">New Entities Discovered</div>
+                            <div class="result-meta">2 hours ago</div>
+                        </div>
+                        <div class="result-content">12,487 new entities extracted from "19th Century Newspaper Archives". Linked 342 historical figures across 1,245 documents.</div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <div class="result-header">
+                            <div class="result-title">Popular Search Query</div>
+                            <div class="result-meta">Today</div>
+                        </div>
+                        <div class="result-content">"Economic impact of Industrial Revolution on textile workers" was searched 42 times today with 98% user satisfaction.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Page -->
+            <div class="page" id="analytics">
+                <div class="analytics-header">
+                    <h1>Analytics Dashboard</h1>
+                    <p>System performance and usage analytics</p>
+                </div>
+
+                <div class="chart-period-selector">
+                    <button class="period-btn active" onclick="changeChartPeriod('7d')">7 Days</button>
+                    <button class="period-btn" onclick="changeChartPeriod('30d')">30 Days</button>
+                    <button class="period-btn" onclick="changeChartPeriod('90d')">90 Days</button>
+                    <button class="period-btn" onclick="changeChartPeriod('1y')">1 Year</button>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- Search Activity Chart -->
+                    <div class="analytics-card">
+                        <h3>Search Activity Over Time</h3>
+                        <div class="chart-container" id="searchChart">
+                            <div class="chart">
+                                <!-- Grid Lines -->
+                                <div class="chart-grid">
+                                    <!-- Horizontal Lines -->
+                                    <div class="chart-grid-line horizontal" style="top: 0%"></div>
+                                    <div class="chart-grid-line horizontal" style="top: 25%"></div>
+                                    <div class="chart-grid-line horizontal" style="top: 50%"></div>
+                                    <div class="chart-grid-line horizontal" style="top: 75%"></div>
+                                    <div class="chart-grid-line horizontal" style="top: 100%"></div>
+                                    
+                                    <!-- Vertical Lines -->
+                                    <div class="chart-grid-line vertical" style="left: 0%"></div>
+                                    <div class="chart-grid-line vertical" style="left: 20%"></div>
+                                    <div class="chart-grid-line vertical" style="left: 40%"></div>
+                                    <div class="chart-grid-line vertical" style="left: 60%"></div>
+                                    <div class="chart-grid-line vertical" style="left: 80%"></div>
+                                    <div class="chart-grid-line vertical" style="left: 100%"></div>
+                                </div>
+                                
+                                <!-- SVG for Line Chart -->
+                                <svg class="chart" viewBox="0 0 400 250" preserveAspectRatio="none">
+                                    <!-- Line Path -->
+                                    <path class="chart-line" d="M40,210 L80,170 L120,190 L160,130 L200,150 L240,110 L280,90 L320,70 L360,50" 
+                                          stroke="#1a2980" fill="none"/>
+                                    
+                                    <!-- Data Points -->
+                                    <circle class="chart-point" cx="40" cy="210" r="4" stroke="#1a2980" fill="white"/>
+                                    <circle class="chart-point" cx="80" cy="170" r="4" stroke="#1a2980" fill="white"/>
+                                    <circle class="chart-point" cx="120" cy="190" r="4" stroke="#1a2980" fill="white"/>
+                                    <circle class="chart-point" cx="160" cy="130" r="4" stroke="#1a2980" fill="white"/>
+                                    <circle class="chart-point" cx="200" cy="150" r="4" stroke="#1a2980" fill="white"/>
+                                    <circle class="chart-point" cx="240" cy="110" r="4" stroke="#1a2980" fill="white"/>
+                                    <circle class="chart-point" cx="280" cy="90" r="4" stroke="#1a2980" fill="white"/>
+                                    <circle class="chart-point" cx="320" cy="70" r="4" stroke="#1a2980" fill="white"/>
+                                    <circle class="chart-point" cx="360" cy="50" r="4" stroke="#1a2980" fill="white"/>
+                                </svg>
+                                
+                                <!-- Y-axis Values -->
+                                <div class="chart-values">
+                                    <span>2500</span>
+                                    <span>2000</span>
+                                    <span>1500</span>
+                                    <span>1000</span>
+                                    <span>500</span>
+                                    <span>0</span>
+                                </div>
+                                
+                                <!-- X-axis Labels -->
+                                <div class="chart-labels">
+                                    <span>Mon</span>
+                                    <span>Tue</span>
+                                    <span>Wed</span>
+                                    <span>Thu</span>
+                                    <span>Fri</span>
+                                    <span>Sat</span>
+                                    <span>Sun</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px; color: #666; font-size: 0.9rem;">
+                            <p><i class="fas fa-arrow-up" style="color: #4CAF50;"></i> 24.7% increase in searches this month</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Processing Status Chart -->
+                    <div class="analytics-card">
+                        <h3>Document Processing Status</h3>
+                        <div class="chart-container" id="processingChart">
+                            <div class="chart">
+                                <!-- Pie Chart SVG -->
+                                <svg class="pie-chart" viewBox="0 0 200 200">
+                                    <!-- Completed (75%) -->
+                                    <path class="pie-segment" d="M100,100 L100,20 A80,80 0 1,1 36,160 Z" fill="#4CAF50"/>
+                                    
+                                    <!-- Processing (15%) -->
+                                    <path class="pie-segment" d="M100,100 L36,160 A80,80 0 0,1 20,100 Z" fill="#1a2980"/>
+                                    
+                                    <!-- Pending (8%) -->
+                                    <path class="pie-segment" d="M100,100 L20,100 A80,80 0 0,1 36,40 Z" fill="#FF9800"/>
+                                    
+                                    <!-- Error (2%) -->
+                                    <path class="pie-segment" d="M100,100 L36,40 A80,80 0 0,1 100,20 Z" fill="#f44336"/>
+                                    
+                                    <!-- Center Circle -->
+                                    <circle cx="100" cy="100" r="40" fill="white"/>
+                                    <text x="100" y="100" text-anchor="middle" dy="5" font-size="16" font-weight="bold" fill="#333">75%</text>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #4CAF50;"></div>
+                                <span>Completed: 934,419 (75%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #1a2980;"></div>
+                                <span>Processing: 186,884 (15%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #FF9800;"></div>
+                                <span>Pending: 99,662 (8%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #f44336;"></div>
+                                <span>Error: 24,927 (2%)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Engagement Chart -->
+                    <div class="analytics-card">
+                        <h3>User Engagement Metrics</h3>
+                        <div class="chart-container" id="engagementChart">
+                            <div class="chart">
+                                <!-- Grid Lines -->
+                                <div class="chart-grid">
+                                    <!-- Horizontal Lines -->
+                                    <div class="chart-grid-line horizontal" style="top: 0%"></div>
+                                    <div class="chart-grid-line horizontal" style="top: 25%"></div>
+                                    <div class="chart-grid-line horizontal" style="top: 50%"></div>
+                                    <div class="chart-grid-line horizontal" style="top: 75%"></div>
+                                    <div class="chart-grid-line horizontal" style="top: 100%"></div>
+                                </div>
+                                
+                                <!-- SVG for Bar Chart -->
+                                <svg class="chart" viewBox="0 0 400 250" preserveAspectRatio="none">
+                                    <!-- Bars -->
+                                    <rect class="chart-bar" x="40" y="150" width="40" height="100" fill="#1a2980"/>
+                                    <rect class="chart-bar" x="90" y="120" width="40" height="130" fill="#26d0ce"/>
+                                    <rect class="chart-bar" x="140" y="90" width="40" height="160" fill="#4CAF50"/>
+                                    <rect class="chart-bar" x="190" y="70" width="40" height="180" fill="#FF9800"/>
+                                    <rect class="chart-bar" x="240" y="50" width="40" height="200" fill="#9C27B0"/>
+                                    <rect class="chart-bar" x="290" y="100" width="40" height="150" fill="#1a2980"/>
+                                    <rect class="chart-bar" x="340" y="130" width="40" height="120" fill="#26d0ce"/>
+                                </svg>
+                                
+                                <!-- Y-axis Values -->
+                                <div class="chart-values">
+                                    <span>500</span>
+                                    <span>400</span>
+                                    <span>300</span>
+                                    <span>200</span>
+                                    <span>100</span>
+                                    <span>0</span>
+                                </div>
+                                
+                                <!-- X-axis Labels -->
+                                <div class="chart-labels">
+                                    <span>Search</span>
+                                    <span>View</span>
+                                    <span>Upload</span>
+                                    <span>Export</span>
+                                    <span>Analyze</span>
+                                    <span>Share</span>
+                                    <span>Save</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px; color: #666; font-size: 0.9rem;">
+                            <p><i class="fas fa-users" style="color: #1a2980;"></i> 1,842 active users this week</p>
+                        </div>
+                    </div>
+                    
+                    <!-- OCR Accuracy Chart -->
+                    <div class="analytics-card">
+                        <h3>OCR Accuracy Trends</h3>
+                        <div class="chart-container" id="accuracyChart">
+                            <div class="chart">
+                                <!-- Grid Lines -->
+                                <div class="chart-grid">
+                                    <!-- Horizontal Lines -->
+                                    <div class="chart-grid-line horizontal" style="top: 0%"></div>
+                                    <div class="chart-grid-line horizontal" style="top: 25%"></div>
+                                    <div class="chart-grid-line horizontal" style="top: 50%"></div>
+                                    <div class="chart-grid-line horizontal" style="top: 75%"></div>
+                                    <div class="chart-grid-line horizontal" style="top: 100%"></div>
+                                    
+                                    <!-- Vertical Lines -->
+                                    <div class="chart-grid-line vertical" style="left: 0%"></div>
+                                    <div class="chart-grid-line vertical" style="left: 20%"></div>
+                                    <div class="chart-grid-line vertical" style="left: 40%"></div>
+                                    <div class="chart-grid-line vertical" style="left: 60%"></div>
+                                    <div class="chart-grid-line vertical" style="left: 80%"></div>
+                                    <div class="chart-grid-line vertical" style="left: 100%"></div>
+                                </div>
+                                
+                                <!-- SVG for Line Chart -->
+                                <svg class="chart" viewBox="0 0 400 250" preserveAspectRatio="none">
+                                    <!-- Line Path -->
+                                    <path class="chart-line" d="M40,180 L80,150 L120,130 L160,110 L200,100 L240,90 L280,85 L320,80" 
+                                          stroke="#4CAF50" fill="none"/>
+                                    
+                                    <!-- Data Points -->
+                                    <circle class="chart-point" cx="40" cy="180" r="4" stroke="#4CAF50" fill="white"/>
+                                    <circle class="chart-point" cx="80" cy="150" r="4" stroke="#4CAF50" fill="white"/>
+                                    <circle class="chart-point" cx="120" cy="130" r="4" stroke="#4CAF50" fill="white"/>
+                                    <circle class="chart-point" cx="160" cy="110" r="4" stroke="#4CAF50" fill="white"/>
+                                    <circle class="chart-point" cx="200" cy="100" r="4" stroke="#4CAF50" fill="white"/>
+                                    <circle class="chart-point" cx="240" cy="90" r="4" stroke="#4CAF50" fill="white"/>
+                                    <circle class="chart-point" cx="280" cy="85" r="4" stroke="#4CAF50" fill="white"/>
+                                    <circle class="chart-point" cx="320" cy="80" r="4" stroke="#4CAF50" fill="white"/>
+                                </svg>
+                                
+                                <!-- Y-axis Values (Percentage) -->
+                                <div class="chart-values">
+                                    <span>100%</span>
+                                    <span>95%</span>
+                                    <span>90%</span>
+                                    <span>85%</span>
+                                    <span>80%</span>
+                                    <span>75%</span>
+                                </div>
+                                
+                                <!-- X-axis Labels (Months) -->
+                                <div class="chart-labels">
+                                    <span>Jan</span>
+                                    <span>Feb</span>
+                                    <span>Mar</span>
+                                    <span>Apr</span>
+                                    <span>May</span>
+                                    <span>Jun</span>
+                                    <span>Jul</span>
+                                    <span>Aug</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px; color: #666; font-size: 0.9rem;">
+                            <p><i class="fas fa-chart-line" style="color: #FF9800;"></i> 94.2% average accuracy rate</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value">94.2%</div>
+                        <div class="metric-label">Average OCR Accuracy</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">78.5%</div>
+                        <div class="metric-label">Compression Ratio</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">0.42s</div>
+                        <div class="metric-label">Average Search Time</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">99.8%</div>
+                        <div class="metric-label">System Uptime</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Page -->
+            <div class="page" id="search">
+                <div class="dashboard-header">
+                    <h1>Advanced Search</h1>
+                    <p>Search across millions of historical documents using natural language</p>
+                </div>
+
+                <div class="search-box-container">
+                    <div class="search-input-group">
+                        <input type="text" class="search-input" id="searchInput" placeholder="Enter your search query or ask a historical question...">
+                        <button class="btn" onclick="performSearch()">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+
+                    <div class="search-filters">
+                        <select class="filter-select" id="documentType">
+                            <option value="">All Document Types</option>
+                            <option value="newspaper">Newspapers</option>
+                            <option value="letter">Letters</option>
+                            <option value="manuscript">Manuscripts</option>
+                            <option value="government">Government Records</option>
+                        </select>
+
+                        <select class="filter-select" id="timePeriod">
+                            <option value="">All Time Periods</option>
+                            <option value="18th">18th Century</option>
+                            <option value="19th">19th Century</option>
+                            <option value="20th">20th Century</option>
+                            <option value="ww1">World War I</option>
+                            <option value="ww2">World War II</option>
+                        </select>
+
+                        <div class="date-range">
+                            <input type="date" class="date-input" id="dateFrom" value="1800-01-01">
+                            <span>to</span>
+                            <input type="date" class="date-input" id="dateTo" value="1950-12-31">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RAG Results -->
+                <div class="rag-result" id="ragResult" style="display: none;">
+                    <h3><i class="fas fa-robot"></i> AI-Generated Answer</h3>
+                    <div class="rag-answer" id="ragAnswer"></div>
+                    <h4>Citations:</h4>
+                    <div id="ragCitations"></div>
+                </div>
+
+                <!-- Search Results -->
+                <div class="search-results" id="searchResults">
+                    <div class="result-item">
+                        <div class="result-header">
+                            <div class="result-title">The Industrial Revolution and Its Impact on Working Conditions</div>
+                            <div class="result-meta"><i class="far fa-calendar"></i> 1843 • <i class="fas fa-file-alt"></i> Factory Inspection Report</div>
+                        </div>
+                        <div class="result-content">
+                            This official report documents the working conditions in Manchester textile mills during the peak of the Industrial Revolution. It details 14-hour work days, child labor practices, and the health impacts of factory work on urban populations. The document includes testimonies from workers and recommendations for labor reform.
+                        </div>
+                        <div class="compression-info">
+                            <i class="fas fa-compress-alt" style="color: #1a2980;"></i>
+                            <span>Original: 12,458 words • Compressed: 2,491 words (80% reduction)</span>
+                        </div>
+                        <div class="result-actions">
+                            <button class="action-btn" onclick="viewDocument('doc1')"><i class="fas fa-eye"></i> View Document</button>
+                            <button class="action-btn" onclick="showRelatedEntities('industrial-revolution')"><i class="fas fa-project-diagram"></i> View Connections</button>
+                            <button class="action-btn" onclick="downloadDocument('doc1')"><i class="fas fa-download"></i> Download</button>
+                        </div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <div class="result-header">
+                            <div class="result-title">Letters from Textile Workers Union (1848)</div>
+                            <div class="result-meta"><i class="far fa-calendar"></i> 1848 • <i class="fas fa-envelope"></i> Personal Correspondence</div>
+                        </div>
+                        <div class="result-content">
+                            A collection of 24 letters between union organizers discussing worker strikes, wage negotiations, and safety concerns in Lancashire cotton mills. The correspondence reveals the early labor movement's strategies and challenges faced by industrial workers.
+                        </div>
+                        <div class="compression-info">
+                            <i class="fas fa-compress-alt" style="color: #1a2980;"></i>
+                            <span>Original: 8,742 words • Compressed: 1,748 words (80% reduction)</span>
+                        </div>
+                        <div class="result-actions">
+                            <button class="action-btn" onclick="viewDocument('doc2')"><i class="fas fa-eye"></i> View Document</button>
+                            <button class="action-btn" onclick="showRelatedEntities('textile-union')"><i class="fas fa-project-diagram"></i> View Connections</button>
+                            <button class="action-btn" onclick="downloadDocument('doc2')"><i class="fas fa-download"></i> Download</button>
+                        </div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <div class="result-header">
+                            <div class="result-title">Parliamentary Commission on Child Labor (1832)</div>
+                            <div class="result-meta"><i class="far fa-calendar"></i> 1832 • <i class="fas fa-landmark"></i> Government Document</div>
+                        </div>
+                        <div class="result-content">
+                            Official findings from the parliamentary commission investigating child labor in British factories. Includes statistical data on working hours, accident rates, and educational deprivation among child workers aged 8-14 in industrial centers.
+                        </div>
+                        <div class="compression-info">
+                            <i class="fas fa-compress-alt" style="color: #1a2980;"></i>
+                            <span>Original: 15,328 words • Compressed: 3,065 words (80% reduction)</span>
+                        </div>
+                        <div class="result-actions">
+                            <button class="action-btn" onclick="viewDocument('doc3')"><i class="fas fa-eye"></i> View Document</button>
+                            <button class="action-btn" onclick="showRelatedEntities('child-labor')"><i class="fas fa-project-diagram"></i> View Connections</button>
+                            <button class="action-btn" onclick="downloadDocument('doc3')"><i class="fas fa-download"></i> Download</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Page -->
+            <div class="page" id="documents">
+                <div class="dashboard-header">
+                    <h1>Document Management</h1>
+                    <p>Browse and manage historical documents</p>
+                </div>
+
+                <div class="search-box-container">
+                    <div class="search-input-group">
+                        <input type="text" class="search-input" placeholder="Filter documents by title, date, or keyword...">
+                        <button class="btn">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                    </div>
+                </div>
+
+                <div class="documents-grid" id="documentsGrid">
+                    <!-- Documents will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Knowledge Graph Page -->
+            <div class="page" id="knowledge-graph">
+                <div class="dashboard-header">
+                    <h1>Knowledge Graph</h1>
+                    <p>Explore connections between historical entities</p>
+                </div>
+
+                <div class="graph-container">
+                    <div class="graph-visualization" id="graphVisualization">
+                        <!-- Graph visualization area -->
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                            <div style="text-align: center;">
+                                <i class="fas fa-project-diagram" style="font-size: 4rem; color: #1a2980; margin-bottom: 20px;"></i>
+                                <h3 style="color: #333; margin-bottom: 10px;">Interactive Knowledge Graph</h3>
+                                <p style="color: #666;">Click on entities to explore connections</p>
+                                <button class="btn" onclick="simulateGraphInteraction()" style="margin-top: 20px;">
+                                    <i class="fas fa-play"></i> Explore Graph
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="graph-controls">
+                        <h3>Entity Types</h3>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #1976d2;"></div>
+                                <span>People (1,248,903)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #388e3c;"></div>
+                                <span>Places (892,415)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #f57c00;"></div>
+                                <span>Events (456,128)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #7b1fa2;"></div>
+                                <span>Documents (1,247,892)</span>
+                            </div>
+                        </div>
+
+                        <div class="entity-list" id="entityList">
+                            <!-- Entities will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OCR Processing Page -->
+            <div class="page" id="ocr-processing">
+                <div class="dashboard-header">
+                    <h1>OCR Processing</h1>
+                    <p>Monitor document processing pipeline</p>
+                </div>
+
+                <div class="processing-queue">
+                    <h3>Processing Queue</h3>
+                    <div class="queue-item">
+                        <div class="queue-status status-processing"></div>
+                        <div class="queue-details">
+                            <div class="queue-filename">Civil_War_Diary_1863.pdf</div>
+                            <div style="color: #666; font-size: 0.9rem;">Handwritten personal diary • 48 pages</div>
+                            <div class="queue-progress">
+                                <div class="progress-bar" style="width: 75%"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                                <span>Stage: Entity Extraction</span>
+                                <span>75% complete</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="queue-item">
+                        <div class="queue-status status-processing"></div>
+                        <div class="queue-details">
+                            <div class="queue-filename">19th_Century_Newspaper_1845.tiff</div>
+                            <div style="color: #666; font-size: 0.9rem;">Printed newspaper • 4 pages • Low quality scan</div>
+                            <div class="queue-progress">
+                                <div class="progress-bar" style="width: 40%"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                                <span>Stage: Text Recognition</span>
+                                <span>40% complete</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="queue-item">
+                        <div class="queue-status status-pending"></div>
+                        <div class="queue-details">
+                            <div class="queue-filename">Medieval_Manuscript_1450.jpg</div>
+                            <div style="color: #666; font-size: 0.9rem;">Illuminated manuscript • 1 page • Latin text</div>
+                            <div class="queue-progress">
+                                <div class="progress-bar" style="width: 0%"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                                <span>Stage: Queued</span>
+                                <span>Waiting for processing</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ocr-preview">
+                    <div class="preview-original">
+                        <div class="preview-title">Original OCR Output</div>
+                        <div class="preview-text" id="originalOCR">
+Tℎe Industr1al R3volut1on br0ught s1gn1ficant chang3s to work1ng cond1tions.
+Many fact0ries employed ch1ldren f0r 14 h0urs da1ly.
+The air quälity in Manchester was poor due to c0al sm0ke.
+Workers organized unions t0 demand better wages and safer env1ronments.
+                        </div>
+                        <div class="accuracy-score">
+                            <i class="fas fa-exclamation-triangle" style="color: #FF9800;"></i>
+                            <span>Initial OCR Accuracy: 82.4%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-processed">
+                        <div class="preview-title">Processed & Corrected Text</div>
+                        <div class="preview-text" id="processedOCR">
+The Industrial Revolution brought significant changes to working conditions.
+Many factories employed children for 14 hours daily.
+The air quality in Manchester was poor due to coal smoke.
+Workers organized unions to demand better wages and safer environments.
+                        </div>
+                        <div class="accuracy-score">
+                            <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
+                            <span>Final Accuracy: 96.7% (AI-corrected)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; text-align: center;">
+                    <button class="btn" onclick="processNextDocument()">
+                        <i class="fas fa-cogs"></i> Process Next Document
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DUMMY DATA =====
+        const dummyData = {
+            documents: [
+                {
+                    id: 'doc1',
+                    title: 'Civil War Letters Collection (1863)',
+                    type: 'letter',
+                    year: 1863,
+                    size: '12.4 MB',
+                    pages: 24,
+                    compression: '79%',
+                    status: 'processed',
+                    tags: ['Civil War', 'Personal Correspondence', 'Handwritten']
+                },
+                {
+                    id: 'doc2',
+                    title: '19th Century Newspaper Archives',
+                    type: 'newspaper',
+                    year: 1845,
+                    size: '8.7 MB',
+                    pages: 4,
+                    compression: '82%',
+                    status: 'processed',
+                    tags: ['Industrial Revolution', 'Printed', 'Mass Media']
+                },
+                {
+                    id: 'doc3',
+                    title: 'Medieval Manuscript Collection',
+                    type: 'manuscript',
+                    year: 1450,
+                    size: '15.2 MB',
+                    pages: 1,
+                    compression: '75%',
+                    status: 'processing',
+                    tags: ['Illuminated', 'Latin', 'Religious']
+                },
+                {
+                    id: 'doc4',
+                    title: 'World War II Government Records',
+                    type: 'government',
+                    year: 1944,
+                    size: '21.8 MB',
+                    pages: 56,
+                    compression: '81%',
+                    status: 'processed',
+                    tags: ['WWII', 'Official Documents', 'Declassified']
+                },
+                {
+                    id: 'doc5',
+                    title: 'Victorian Era Photographs Archive',
+                    type: 'photograph',
+                    year: 1890,
+                    size: '34.5 MB',
+                    pages: 120,
+                    compression: '65%',
+                    status: 'pending',
+                    tags: ['Photography', 'Social History', 'Visual Archive']
+                }
+            ],
+            
+            entities: [
+                {
+                    id: 'ent1',
+                    name: 'Abraham Lincoln',
+                    type: 'person',
+                    connections: 1247,
+                    description: '16th President of the United States'
+                },
+                {
+                    id: 'ent2',
+                    name: 'Manchester',
+                    type: 'place',
+                    connections: 892,
+                    description: 'Industrial city in Northwest England'
+                },
+                {
+                    id: 'ent3',
+                    name: 'Industrial Revolution',
+                    type: 'event',
+                    connections: 2156,
+                    description: 'Period of major industrialization 1760-1840'
+                },
+                {
+                    id: 'ent4',
+                    name: 'The Times Newspaper',
+                    type: 'document',
+                    connections: 478,
+                    description: 'British daily newspaper founded in 1785'
+                },
+                {
+                    id: 'ent5',
+                    name: 'Queen Victoria',
+                    type: 'person',
+                    connections: 1893,
+                    description: 'Queen of the United Kingdom 1837-1901'
+                }
+            ],
+            
+            searchQueries: [
+                "economic impact of industrial revolution",
+                "civil war personal letters",
+                "working conditions 19th century",
+                "women's suffrage movement",
+                "medieval trade routes"
+            ],
+            
+            ragResponses: {
+                "industrial revolution": {
+                    answer: "The Industrial Revolution (1760-1840) transformed working conditions dramatically. Factory workers typically labored 14-16 hours daily, 6 days a week. Child labor was widespread, with children as young as 8 working in dangerous conditions. Urbanization led to overcrowded cities with poor sanitation. The Factory Acts of 1833 began regulating working hours and child labor.",
+                    citations: [
+                        "Factory Inspection Report (1843), Manchester Archives",
+                        "Parliamentary Commission on Child Labor (1832)",
+                        "Textile Workers Union Correspondence (1848)"
+                    ]
+                },
+                "civil war": {
+                    answer: "The American Civil War (1861-1865) generated extensive personal correspondence. Soldiers' letters reveal daily life in camps, battlefield experiences, and concerns about families at home. Medical records show infection was a greater killer than battlefield wounds. The war accelerated industrialization in the North while devastating the Southern economy.",
+                    citations: [
+                        "Civil War Letters Collection (1863), National Archives",
+                        "Medical Corps Field Reports (1864)",
+                        "War Department Communications (1862-1865)"
+                    ]
+                }
+            }
+        };
+
+        // ===== INITIAL LOAD =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize charts
+            initializeCharts();
+            
+            // Load documents
+            loadDocuments();
+            
+            // Load entities
+            loadEntities();
+            
+            // Set up search input
+            setupSearch();
+            
+            // Simulate real-time updates
+            simulateRealTimeUpdates();
+        });
+
+        // ===== PAGE NAVIGATION =====
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update active state in top navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Update active state in sidebar
+            document.querySelectorAll('.sidebar-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Add active class to current page links
+            document.querySelector(`.nav-item[onclick*="${pageId}"]`).classList.add('active');
+            document.querySelector(`.sidebar-links a[onclick*="${pageId}"]`).classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+            
+            // Special handling for certain pages
+            if (pageId === 'knowledge-graph') {
+                simulateGraphVisualization();
+            }
+        }
+
+        // ===== DOCUMENT MANAGEMENT =====
+        function loadDocuments() {
+            const container = document.getElementById('documentsGrid');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            dummyData.documents.forEach(doc => {
+                const card = document.createElement('div');
+                card.className = 'document-card';
+                card.innerHTML = `
+                    <div class="document-image">
+                        <i class="fas fa-file-${getDocumentIcon(doc.type)}"></i>
+                    </div>
+                    <div class="document-content">
+                        <div class="document-title">${doc.title}</div>
+                        <div class="document-meta">
+                            <span class="meta-tag">${doc.year}</span>
+                            <span class="meta-tag">${doc.type}</span>
+                            <span class="meta-tag">${doc.status}</span>
+                            ${doc.tags.map(tag => `<span class="meta-tag">${tag}</span>`).join('')}
+                        </div>
+                        <div class="document-stats">
+                            <div>
+                                <i class="fas fa-file-alt"></i>
+                                <span>${doc.pages} pages</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-compress-alt"></i>
+                                <span>${doc.compression} reduced</span>
+                            </div>
+                        </div>
+                        <button class="action-btn" onclick="viewDocument('${doc.id}')" style="width: 100%; margin-top: 15px;">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function getDocumentIcon(type) {
+            const icons = {
+                'letter': 'pdf',
+                'newspaper': 'newspaper',
+                'manuscript': 'scroll',
+                'government': 'archive',
+                'photograph': 'image'
+            };
+            return icons[type] || 'file';
+        }
+
+        // ===== KNOWLEDGE GRAPH =====
+        function loadEntities() {
+            const container = document.getElementById('entityList');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            dummyData.entities.forEach(entity => {
+                const item = document.createElement('div');
+                item.className = 'entity-item';
+                item.onclick = () => selectEntity(entity.id);
+                item.innerHTML = `
+                    <div class="entity-name">${entity.name}</div>
+                    <div class="entity-type ${entity.type}-type">${entity.type.toUpperCase()}</div>
+                    <div style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">${entity.description}</div>
+                    <div class="entity-connections">
+                        <i class="fas fa-link"></i>
+                        <span>${entity.connections.toLocaleString()} connections</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function simulateGraphVisualization() {
+            const container = document.getElementById('graphVisualization');
+            if (!container) return;
+            
+            // Create a simple graph visualization
+            container.innerHTML = `
+                <div style="position: relative; width: 100%; height: 100%;">
+                    <!-- Central Node -->
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                                width: 100px; height: 100px; background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%); 
+                                border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                                color: white; font-weight: bold; box-shadow: 0 10px 30px rgba(26, 41, 128, 0.4);">
+                        Industrial Revolution
+                    </div>
+                    
+                    <!-- Connected Nodes -->
+                    <div style="position: absolute; top: 20%; left: 20%; width: 80px; height: 80px; background: #1976d2; 
+                                border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                                color: white; font-weight: bold; font-size: 0.9rem; box-shadow: 0 5px 20px rgba(25, 118, 210, 0.3);">
+                        Factories
+                    </div>
+                    
+                    <div style="position: absolute; top: 20%; right: 20%; width: 80px; height: 80px; background: #388e3c; 
+                                border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                                color: white; font-weight: bold; font-size: 0.9rem; box-shadow: 0 5px 20px rgba(56, 142, 60, 0.3);">
+                        Manchester
+                    </div>
+                    
+                    <div style="position: absolute; bottom: 20%; left: 20%; width: 80px; height: 80px; background: #f57c00; 
+                                border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                                color: white; font-weight: bold; font-size: 0.9rem; box-shadow: 0 5px 20px rgba(245, 124, 0, 0.3);">
+                        Child Labor
+                    </div>
+                    
+                    <div style="position: absolute; bottom: 20%; right: 20%; width: 80px; height: 80px; background: #7b1fa2; 
+                                border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                                color: white; font-weight: bold; font-size: 0.9rem; box-shadow: 0 5px 20px rgba(123, 31, 162, 0.3);">
+                        Factory Acts
+                    </div>
+                    
+                    <!-- Connection Lines -->
+                    <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                        <line x1="50%" y1="50%" x2="30%" y2="30%" stroke="#1a2980" stroke-width="2" opacity="0.6"/>
+                        <line x1="50%" y1="50%" x2="70%" y2="30%" stroke="#1a2980" stroke-width="2" opacity="0.6"/>
+                        <line x1="50%" y1="50%" x2="30%" y2="70%" stroke="#1a2980" stroke-width="2" opacity="0.6"/>
+                        <line x1="50%" y1="50%" x2="70%" y2="70%" stroke="#1a2980" stroke-width="2" opacity="0.6"/>
+                    </svg>
+                </div>
+            `;
+        }
+
+        function selectEntity(entityId) {
+            const entity = dummyData.entities.find(e => e.id === entityId);
+            if (entity) {
+                alert(`Selected: ${entity.name}\n\nType: ${entity.type}\nConnections: ${entity.connections}\n\nThis would show detailed information about ${entity.name} and their connections in the historical archive.`);
+            }
+        }
+
+        function simulateGraphInteraction() {
+            document.getElementById('graphVisualization').innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px;">
+                    <i class="fas fa-cogs" style="font-size: 3rem; color: #1a2980; margin-bottom: 20px; animation: spin 2s linear infinite;"></i>
+                    <h3 style="color: #333; margin-bottom: 10px;">Loading Interactive Graph</h3>
+                    <p style="color: #666; text-align: center; margin-bottom: 20px;">
+                        The knowledge graph is being generated with ${dummyData.entities.length.toLocaleString()} entities and their connections.
+                        This visualization would show how historical figures, places, and events are interconnected.
+                    </p>
+                    <div class="queue-progress" style="width: 80%;">
+                        <div class="progress-bar" style="width: 100%;"></div>
+                    </div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                simulateGraphVisualization();
+                alert('Knowledge graph loaded! Click on any entity node to explore connections.');
+            }, 2000);
+        }
+
+        // ===== SEARCH FUNCTIONALITY =====
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                // Add sample queries
+                let queryIndex = 0;
+                
+                searchInput.addEventListener('focus', function() {
+                    if (!this.value) {
+                        this.placeholder = dummyData.searchQueries[queryIndex];
+                        queryIndex = (queryIndex + 1) % dummyData.searchQueries.length;
+                    }
+                });
+                
+                // Allow Enter key to search
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performSearch();
+                    }
+                });
+            }
+        }
+
+        function performSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput.value.toLowerCase().trim();
+            
+            if (!query) {
+                alert('Please enter a search query');
+                return;
+            }
+            
+            // Show loading state
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = `
+                <div style="padding: 40px; text-align: center;">
+                    <i class="fas fa-cogs fa-spin" style="font-size: 2rem; color: #1a2980; margin-bottom: 20px;"></i>
+                    <h3>Searching Archives...</h3>
+                    <p>Query: "${query}"</p>
+                    <div class="queue-progress" style="width: 200px; margin: 20px auto;">
+                        <div class="progress-bar" style="width: 100%;"></div>
+                    </div>
+                </div>
+            `;
+            
+            // Simulate search processing
+            setTimeout(() => {
+                showSearchResults(query);
+            }, 1500);
+        }
+
+        function showSearchResults(query) {
+            const ragResult = document.getElementById('ragResult');
+            const ragAnswer = document.getElementById('ragAnswer');
+            const ragCitations = document.getElementById('ragCitations');
+            const resultsContainer = document.getElementById('searchResults');
+            
+            // Show RAG result for certain queries
+            if (query.includes('industrial revolution') || query.includes('working condition')) {
+                const response = dummyData.ragResponses['industrial revolution'];
+                ragAnswer.innerHTML = response.answer;
+                ragCitations.innerHTML = response.citations.map(citation => 
+                    `<div class="rag-citation"><i class="fas fa-file-alt"></i> ${citation}</div>`
+                ).join('');
+                ragResult.style.display = 'block';
+            } else if (query.includes('civil war')) {
+                const response = dummyData.ragResponses['civil war'];
+                ragAnswer.innerHTML = response.answer;
+                ragCitations.innerHTML = response.citations.map(citation => 
+                    `<div class="rag-citation"><i class="fas fa-file-alt"></i> ${citation}</div>`
+                ).join('');
+                ragResult.style.display = 'block';
+            } else {
+                ragResult.style.display = 'none';
+            }
+            
+            // Show search results
+            resultsContainer.innerHTML = `
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-title">Search Results for: "${query}"</div>
+                        <div class="result-meta">Found 1,247 documents in 0.42 seconds</div>
+                    </div>
+                    <div class="result-content">
+                        Your search matched documents across multiple collections. The RAG system has analyzed the most relevant documents to generate a comprehensive answer above.
+                    </div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-title">The Industrial Revolution and Its Impact on Working Conditions</div>
+                        <div class="result-meta"><i class="far fa-calendar"></i> 1843 • <i class="fas fa-file-alt"></i> Factory Inspection Report</div>
+                    </div>
+                    <div class="result-content">
+                        This official report documents the working conditions in Manchester textile mills during the peak of the Industrial Revolution. It details 14-hour work days, child labor practices, and the health impacts of factory work on urban populations.
+                    </div>
+                    <div class="compression-info">
+                        <i class="fas fa-compress-alt" style="color: #1a2980;"></i>
+                        <span>Original: 12,458 words • Compressed: 2,491 words (80% reduction)</span>
+                    </div>
+                    <div class="result-actions">
+                        <button class="action-btn" onclick="viewDocument('doc1')"><i class="fas fa-eye"></i> View Document</button>
+                        <button class="action-btn" onclick="showRelatedEntities('industrial-revolution')"><i class="fas fa-project-diagram"></i> View Connections</button>
+                    </div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-title">Factory Acts Legislation (1833-1878)</div>
+                        <div class="result-meta"><i class="far fa-calendar"></i> 1833-1878 • <i class="fas fa-landmark"></i> Government Legislation</div>
+                    </div>
+                    <div class="result-content">
+                        Collection of Factory Acts that progressively regulated working hours, child labor, and safety conditions in British factories. Includes parliamentary debates, amendments, and enforcement records.
+                    </div>
+                    <div class="compression-info">
+                        <i class="fas fa-compress-alt" style="color: #1a2980;"></i>
+                        <span>Original: 8,742 words • Compressed: 1,748 words (80% reduction)</span>
+                    </div>
+                    <div class="result-actions">
+                        <button class="action-btn" onclick="viewDocument('doc2')"><i class="fas fa-eye"></i> View Document</button>
+                        <button class="action-btn" onclick="showRelatedEntities('factory-acts')"><i class="fas fa-project-diagram"></i> View Connections</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ===== OCR PROCESSING =====
+        function processNextDocument() {
+            alert('Processing next document in queue...\n\nThe OCR pipeline will: 1. Scan document\n2. Extract text\n3. Correct errors\n4. Extract entities\n5. Compress with ScaleDown\n6. Index for search');
+            
+            // Update OCR preview with new text
+            const original = document.getElementById('originalOCR');
+            const processed = document.getElementById('processedOCR');
+            
+            if (original && processed) {
+                original.innerHTML = `N3w d0cum3nt pr0cess1ng...\nTh1s 1s a s1mula†ed OCR 0utput.\nThe syst3m w1ll c0rrect m1sspelled w0rds.\nH1st0r1cal c0ntext w1ll b3 rest0red.\nEntities w1ll b3 extracted automätically.`;
+                processed.innerHTML = `New document processing...\nThis is a simulated OCR output.\nThe system will correct misspelled words.\nHistorical context will be restored.\nEntities will be extracted automatically.`;
+                
+                // Animate progress bars
+                document.querySelectorAll('.progress-bar').forEach(bar => {
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = Math.floor(Math.random() * 30 + 70) + '%';
+                    }, 100);
+                });
+            }
+        }
+
+        // ===== VIEW FUNCTIONS =====
+        function viewDocument(docId) {
+            const doc = dummyData.documents.find(d => d.id === docId);
+            if (doc) {
+                alert(`Viewing: ${doc.title}\n\nYear: ${doc.year}\nType: ${doc.type}\nSize: ${doc.size}\nPages: ${doc.pages}\nCompression: ${doc.compression} reduction\n\nThis would open the document viewer with OCR text, original scan, and entity highlights.`);
+            }
+        }
+
+        function showRelatedEntities(topic) {
+            alert(`Showing connections for: ${topic}\n\nThis would display the knowledge graph focused on this topic, showing related people, places, events, and documents.\n\nExample connections:\n• Factories and industrial cities\n• Labor reformers and activists\n• Government legislation\n• Economic impacts`);
+        }
+
+        function downloadDocument(docId) {
+            alert('Document download would start here.\nOptions: Original scan, OCR text, Compressed version, or Entity data.');
+        }
+
+        // ===== QUICK ACTIONS =====
+        function uploadDocument() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pdf,.jpg,.jpeg,.png,.tiff';
+            input.onchange = function() {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    alert(`Document "${file.name}" uploaded!\n\nIt will now be processed through the OCR pipeline and added to the archive.`);
+                    showPage('ocr-processing');
+                }
+            };
+            input.click();
+        }
+
+        function newSearch() {
+            showPage('search');
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.value = '';
+            }
+        }
+
+        function viewReports() {
+            showPage('analytics');
+        }
+
+        function exportData() {
+            alert('Export options:\n\n1. Search results as CSV\n2. Document metadata\n3. Entity relationships\n4. Full knowledge graph\n5. OCR text corpus\n\nSelect format and data range to export.');
+        }
+
+        // ===== CHART FUNCTIONS =====
+        function initializeCharts() {
+            // Animate charts
+            document.querySelectorAll('.chart-line, .chart-bar, .pie-segment').forEach(element => {
+                element.style.opacity = '0';
+                element.style.transform = 'scale(0.8)';
+                
+                setTimeout(() => {
+                    element.style.transition = 'all 0.5s ease';
+                    element.style.opacity = '1';
+                    element.style.transform = 'scale(1)';
+                }, 100);
+            });
+        }
+
+        function changeChartPeriod(period) {
+            // Update active button
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update charts
+            updateCharts(period);
+        }
+
+        function updateCharts(period) {
+            // Update chart data based on period
+            const searchPath = document.querySelector('#searchChart .chart-line');
+            const processingCenter = document.querySelector('#processingChart text');
+            const accuracyPath = document.querySelector('#accuracyChart .chart-line');
+            
+            let searchData, processingPercent, accuracyData;
+            
+            switch(period) {
+                case '7d':
+                    searchData = "M40,210 L80,170 L120,190 L160,130 L200,150 L240,110 L280,90 L320,70 L360,50";
+                    processingPercent = "75%";
+                    accuracyData = "M40,180 L80,150 L120,130 L160,110 L200,100 L240,90 L280,85 L320,80";
+                    break;
+                case '30d':
+                    searchData = "M40,200 L80,180 L120,160 L160,140 L200,120 L240,100 L280,90 L320,85 L360,80";
+                    processingPercent = "78%";
+                    accuracyData = "M40,190 L80,160 L120,140 L160,120 L200,110 L240,100 L280,95 L320,90";
+                    break;
+                case '90d':
+                    searchData = "M40,190 L80,160 L120,140 L160,120 L200,110 L240,100 L280,95 L320,90 L360,85";
+                    processingPercent = "82%";
+                    accuracyData = "M40,185 L80,155 L120,135 L160,115 L200,105 L240,95 L280,90 L320,88";
+                    break;
+                case '1y':
+                    searchData = "M40,180 L80,150 L120,130 L160,115 L200,105 L240,95 L280,90 L320,88 L360,85";
+                    processingPercent = "85%";
+                    accuracyData = "M40,175 L80,145 L120,125 L160,110 L200,100 L240,90 L280,85 L320,82";
+                    break;
+            }
+            
+            // Animate transitions
+            if (searchPath) {
+                searchPath.style.transition = 'd 0.8s ease';
+                searchPath.setAttribute('d', searchData);
+            }
+            
+            if (processingCenter) {
+                processingCenter.textContent = processingPercent;
+                processingCenter.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    processingCenter.style.transform = 'scale(1)';
+                }, 300);
+            }
+            
+            if (accuracyPath) {
+                accuracyPath.style.transition = 'd 0.8s ease';
+                accuracyPath.setAttribute('d', accuracyData);
+            }
+        }
+
+        // ===== REAL-TIME SIMULATION =====
+        function simulateRealTimeUpdates() {
+            // Update stats every 30 seconds
+            setInterval(() => {
+                const statNumbers = document.querySelectorAll('.stat-number');
+                if (statNumbers.length >= 4) {
+                    // Increment searches
+                    let searchCount = parseInt(statNumbers[3].textContent.replace(/,/g, ''));
+                    searchCount += Math.floor(Math.random() * 10) + 1;
+                    statNumbers[3].textContent = searchCount.toLocaleString();
+                    
+                    // Update last sync time
+                    const now = new Date();
+                    const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    document.getElementById('lastSync').textContent = timeString;
+                }
+            }, 30000);
+            
+            // Simulate processing updates
+            setInterval(() => {
+                const progressBars = document.querySelectorAll('.progress-bar:not([style*="width: 100%"])');
+                progressBars.forEach(bar => {
+                    const currentWidth = parseInt(bar.style.width) || 0;
+                    if (currentWidth < 100) {
+                        const newWidth = Math.min(100, currentWidth + Math.random() * 10);
+                        bar.style.width = newWidth + '%';
+                        
+                        // Update status text
+                        const statusText = bar.closest('.queue-item')?.querySelector('span:last-child');
+                        if (statusText) {
+                            statusText.textContent = Math.floor(newWidth) + '% complete';
+                        }
+                    }
+                });
+            }, 5000);
+        }
+
+        // ===== GLOBAL FUNCTIONS =====
+        window.showPage = showPage;
+        window.changeChartPeriod = changeChartPeriod;
+        window.uploadDocument = uploadDocument;
+        window.newSearch = newSearch;
+        window.viewReports = viewReports;
+        window.exportData = exportData;
+        window.performSearch = performSearch;
+        window.viewDocument = viewDocument;
+        window.showRelatedEntities = showRelatedEntities;
+        window.downloadDocument = downloadDocument;
+        window.selectEntity = selectEntity;
+        window.simulateGraphInteraction = simulateGraphInteraction;
+        window.processNextDocument = processNextDocument;
+    </script>
+</body>
+</html>
